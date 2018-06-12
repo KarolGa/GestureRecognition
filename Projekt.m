@@ -83,16 +83,16 @@ end
 %% Krok 8 : Image analysis
 xdiff=0;
 ydiff=0;
+fig=0;
 flag_error=0;
 areaprop(:)=0;
 for i=2:numPh
 [imLb, num] = bwlabel(filPhotos(:,:,i), 8);
-
 naj=1;
 if(num>1) %rozpoznawanie najwiekszego obiektu gdy num>1
     for j=1:num
-    fig2=ismember(imLb,j);
-    areaprop=regionprops(fig2,'Area')
+    fig=ismember(imLb,j);
+    areaprop=regionprops(fig,'Area');
     area(j)=areaprop.Area;
     end
     for j=2:num
@@ -101,12 +101,13 @@ if(num>1) %rozpoznawanie najwiekszego obiektu gdy num>1
         end
     end
 end
-
+    if num~=0
     fig=ismember(imLb, naj);
     prop(i)=regionprops(fig, 'Centroid');
     if i>2
   	xdiff=xdiff+prop(i).Centroid(1)-prop(i-1).Centroid(1);
     ydiff=ydiff+prop(i).Centroid(2)-prop(i-1).Centroid(2);
+    end
     end
 end
 
