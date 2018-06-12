@@ -1,8 +1,13 @@
+
 close all;
 clear all;
 clc;
 
+<<<<<<< HEAD
 %% Step : Get informations about adaptor
+=======
+%% Krok 1 : Pozyskaj informacje o sprz?cie
+>>>>>>> be306e30159b73dda3a0ceb5486bae34607385b6
 % Adaptor name
 % Device ID
 % Video format
@@ -10,11 +15,21 @@ clc;
 %info = imaqhwinfo('winvideo')
 %dev_info = imaqhwinfo('winvideo',1)
 %dev_info.SupportedFormats;
+<<<<<<< HEAD
 
 %% Step2 : Create a video input object
 vidobj = videoinput('winvideo',1,'YUY2_640x480');
 
 %% Step 3: Configure image acquisition object properties (Optional)
+=======
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Krok 2 : Utw?rz wej?ciowy obiekt akwizycji
+% Step2 : Create a video input object
+vidobj = videoinput('winvideo',1,'YUY2_640x480');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Krok 3 :Konfiguracja w?asno?ci obiektu (opcjonalnie)
+% Step 3: Configure image acquisition object properties (Optional)
+>>>>>>> be306e30159b73dda3a0ceb5486bae34607385b6
  get(vidobj);
 % inspect(vidobj)
  set(vidobj,'ReturnedColorSpace','rgb');
@@ -29,7 +44,11 @@ set(vidobj,'TriggerRepeat', Inf);
 start(vidobj);
 disp('Zacznij wykonywac gest');
 pause(0.2);
+<<<<<<< HEAD
 numPh=8; %liczba zdjec wykonanych przez kamerke
+=======
+numPh=8; %liczba zdj?? wykonanych przez kamerke
+>>>>>>> be306e30159b73dda3a0ceb5486bae34607385b6
 for i=1:numPh
  trigger(vidobj);
  %pause(0.1)
@@ -37,13 +56,23 @@ for i=1:numPh
  subplot(2, 4, i);
  imshow(photos(:,:,:,i));
 end
+<<<<<<< HEAD
 
 %% Step 5 : Clean Up
+=======
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Krok 5 : Usuni?cie obiektu z pami?ci i wyczyszczenie przestrzeni roboczej
+% Step 5 : Clean Up
+>>>>>>> be306e30159b73dda3a0ceb5486bae34607385b6
 stop(vidobj);
 delete(vidobj);
 clear vidobj;
 
+<<<<<<< HEAD
 %% Krok 6 : Checking wether pixel changed comparing to previous photo
+=======
+%% Krok 6 : Sprawdzanie czy piksel si? zmieni?
+>>>>>>> be306e30159b73dda3a0ceb5486bae34607385b6
 for i=1:numPh
 bwPhotos(:,:,i)=rgb2gray(photos(:,:,:,i));
 figure(2);
@@ -80,6 +109,7 @@ for i=2:numPh
     imshow(filPhotos(:,:,i));
 end
 
+<<<<<<< HEAD
 %% Krok 8 : Image analysis
 xdiff=0;
 ydiff=0;
@@ -100,6 +130,57 @@ if(num>1) %rozpoznawanie najwiekszego obiektu gdy num>1
         naj=j;    
         end
     end
+=======
+%% Krok 8 : Analiza obrazow
+gesture_x=[];
+gesture_y=[];
+flag_error=0;
+for i=2:numPh
+[imLb, num] = bwlabel(filPhotos(:,:,i), 8);
+if num ~= 1
+    disp('gest nierozpoznany');
+    flag_error=1;
+    break;
+else    
+    %miejsce dla rozpoznawania najwiekszego obiektu gdy num>1
+  %  for i=1:num
+%fig = ismember(imLb, i);
+
+prop(i)=regionprops(imLb, 'Centroid')
+    if i>2
+     if (prop(i).Centroid(1)>(prop(i-1).Centroid(1))) 
+       gesture_x(i)=1;
+     else
+       gesture_x(i)=-1;
+       end
+         if (prop(i).Centroid(2)>(prop(i-1).Centroid(2))) 
+              gesture_y(i)=1;
+         else
+             gesture_y(i)=-1; 
+         end
+     
+    end
+    if i == numPh
+      xdiff=abs(prop(i).Centroid(1)-(prop(2).Centroid(1)));
+      ydiff=abs(prop(i).Centroid(2)-(prop(2).Centroid(2)));
+    end
+end
+end
+%%
+if flag_error ~=1
+  if (sum(gesture_x)>0 && xdiff>ydiff)
+   disp('gesture_1, hand> left');
+  end
+        if (sum(gesture_x)<0 && xdiff>ydiff)
+         disp('gesture_2, hand> right');
+        end
+               if (sum(gesture_y)<0 && xdiff<ydiff)
+                disp('gesture_3, hand> up');
+               end
+                    if (sum(gesture_y)>0 && xdiff<ydiff)
+                      disp('gesture_4, hand> down');
+                    end
+>>>>>>> be306e30159b73dda3a0ceb5486bae34607385b6
 end
 
     fig=ismember(imLb, naj);
