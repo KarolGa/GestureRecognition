@@ -2,7 +2,7 @@ close all;
 clear all;
 clc;
 
-%% Krok 1 : Pozyskaj informacje o sprzêcie
+%% Step : Get informations about adaptor
 % Adaptor name
 % Device ID
 % Video format
@@ -10,13 +10,11 @@ clc;
 %info = imaqhwinfo('winvideo')
 %dev_info = imaqhwinfo('winvideo',1)
 %dev_info.SupportedFormats;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Krok 2 : Utwórz wejœciowy obiekt akwizycji
-% Step2 : Create a video input object
+
+%% Step2 : Create a video input object
 vidobj = videoinput('winvideo',1,'YUY2_640x480');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Krok 3 :Konfiguracja w³asnoœci obiektu (opcjonalnie)
-% Step 3: Configure image acquisition object properties (Optional)
+
+%% Step 3: Configure image acquisition object properties (Optional)
  get(vidobj);
 % inspect(vidobj)
  set(vidobj,'ReturnedColorSpace','rgb');
@@ -26,13 +24,12 @@ vidobj = videoinput('winvideo',1,'YUY2_640x480');
 triggerconfig(vidobj,'manual');
 set(vidobj,'FramesPerTrigger',1);
 set(vidobj,'TriggerRepeat', Inf);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Krok 4: Akwizycja danych wizyjnych - obrazu
-% Step 4: Acquire Image Data
+
+%% Step 4: Acquire Image Data
 start(vidobj);
 disp('Zacznij wykonywac gest');
 pause(0.2);
-numPh=8; %liczba zdjêæ wykonanych przez kamerke
+numPh=8; %liczba zdjec wykonanych przez kamerke
 for i=1:numPh
  trigger(vidobj);
  %pause(0.1)
@@ -40,14 +37,13 @@ for i=1:numPh
  subplot(2, 4, i);
  imshow(photos(:,:,:,i));
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Krok 5 : Usuniêcie obiektu z pamiêci i wyczyszczenie przestrzeni roboczej
-% Step 5 : Clean Up
+
+%% Step 5 : Clean Up
 stop(vidobj);
 delete(vidobj);
 clear vidobj;
 
-%% Krok 6 : Sprawdzanie czy piksel siê zmieni³
+%% Krok 6 : Checking wether pixel changed comparing to previous photo
 for i=1:numPh
 bwPhotos(:,:,i)=rgb2gray(photos(:,:,:,i));
 figure(2);
@@ -56,7 +52,6 @@ imshow(bwPhotos(:,:,i));
 end
 
 sensePhotos=bwPhotos;
-
 figure(3);
 subplot(2, 4, 1);
 imshow(bwPhotos(:,:,1));
@@ -73,9 +68,7 @@ subplot(2, 4, i);
 imshow(sensePhotos(:,:,i));
 end
 
-%% Krok 7 : Binaryzacja i filtracja 
-
-
+%% Krok 7 : Binarization and filtration
 seO=strel('disk',7);
 seC=strel('disk',80);
 figure(4)
@@ -87,8 +80,50 @@ for i=2:numPh
     imshow(filPhotos(:,:,i));
 end
 
-%% Krok 8 : Analiza obrazow
+%% Krok 8 : Image analysis
+xdiff=0;
+ydiff=0;
+flag_error=0;
+areaprop(:)=0;
 for i=2:numPh
 [imLb, num] = bwlabel(filPhotos(:,:,i), 8);
-prop=regionprops(imLb, 'Centroid')
+
+naj=1;
+if(num>1) %rozpoznawanie najwiekszego obiektu gdy num>1
+    for j=1:num
+    fig2=ismember(imLb,j);
+    areaprop=regionprops(fig2,'Area')
+    area(j)=areaprop.Area;
+    end
+    for j=2:num
+        if area(1)<area(2)
+        naj=j;    
+        end
+    end
+end
+
+    fig=ismember(imLb, naj);
+    prop(i)=regionprops(fig, 'Centroid');
+    if i>2
+  	xdiff=xdiff+prop(i).Centroid(1)-prop(i-1).Centroid(1);
+    ydiff=ydiff+prop(i).Centroid(2)-prop(i-1).Centroid(2);
+    end
+end
+
+if(xdiff<ydiff+80&&xdiff>ydiff-80)
+    disp('Gesture was not clear');
+else
+    if(abs(xdiff)>abs(ydiff))
+        if(xdiff>0)
+        disp('left');
+        else
+        disp('right');
+        end
+    else
+        if(ydiff>0)
+        disp('down');
+        else
+        disp('up');
+        end
+    end
 end
