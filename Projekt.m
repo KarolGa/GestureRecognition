@@ -108,10 +108,13 @@ end
   	xdiff=xdiff+prop(i).Centroid(1)-prop(i-1).Centroid(1);
     ydiff=ydiff+prop(i).Centroid(2)-prop(i-1).Centroid(2);
     end
+    else
+      flag_error=1;
+       break;
     end
 end
 
-if(xdiff<ydiff+80&&xdiff>ydiff-80)
+if(xdiff<ydiff+80&&xdiff>ydiff-80) || flag_error==1
     disp('Gesture was not clear');
 else
     if(abs(xdiff)>abs(ydiff))
